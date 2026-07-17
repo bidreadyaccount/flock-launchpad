@@ -11,7 +11,7 @@ export const publicClient = createPublicClient({
 })
 
 const tokenCreatedEvent = parseAbiItem(
-  'event TokenCreated(address indexed token, address indexed creator, string name, string symbol, string metadataURI)'
+  'event TokenCreated(address indexed token, address indexed creator, string name, string symbol, string metadataURI, address pair)'
 )
 const tradeEvent = parseAbiItem(
   'event Trade(address indexed token, address indexed trader, bool isBuy, uint256 ethAmount, uint256 tokenAmount, uint256 virtualEth, uint256 virtualToken)'
@@ -24,6 +24,7 @@ export type CoinInfo = {
   symbol: string
   meta: TokenMeta
   createdBlock: bigint
+  pair: `0x${string}`
   // live curve state
   virtualEth: bigint
   virtualToken: bigint
@@ -40,7 +41,7 @@ async function fetchCurve(token: `0x${string}`) {
     abi: launchpadAbi,
     functionName: 'curves',
     args: [token],
-  })) as [string, bigint, bigint, bigint, bigint, boolean, boolean]
+  })) as [string, bigint, bigint, bigint, bigint, boolean, boolean, string]
   return {
     virtualEth: c[1],
     virtualToken: c[2],
@@ -48,6 +49,7 @@ async function fetchCurve(token: `0x${string}`) {
     tokensSold: c[4],
     complete: c[5],
     graduated: c[6],
+    pair: c[7] as `0x${string}`,
   }
 }
 
@@ -64,24 +66,30 @@ export function useCoins() {
         fromBlock: DEPLOY_BLOCK,
         toBlock: 'latest',
       })
-      const coins = await Promise.all(
+      // M-02: build each coin in isolation. A single malformed log/token must
+      // never reject the whole query and blank the entire list.
+      const built = await Promise.all(
         logs.map(async (log) => {
-          const token = log.args.token as `0x${string}`
-          const curve = await fetchCurve(token)
-          const progressBps = Number((curve.tokensSold * 10000n) / (800_000_000n * 10n ** 18n))
-          return {
-            token,
-            creator: log.args.creator as `0x${string}`,
-            name: log.args.name as string,
-            symbol: log.args.symbol as string,
-            meta: parseMeta((log.args.metadataURI as string) || ''),
-            createdBlock: log.blockNumber,
-            ...curve,
-            progressBps,
+          try {
+            const token = log.args.token as `0x${string}`
+            const curve = await fetchCurve(token)
+            const progressBps = Number((curve.tokensSold * 10000n) / (800_000_000n * 10n ** 18n))
+            return {
+              token,
+              creator: log.args.creator as `0x${string}`,
+              name: String(log.args.name ?? '').slice(0, 64),
+              symbol: String(log.args.symbol ?? '').slice(0, 16),
+              meta: parseMeta((log.args.metadataURI as string) || ''),
+              createdBlock: log.blockNumber,
+              ...curve,
+              progressBps,
+            } as CoinInfo
+          } catch {
+            return null // drop just this coin
           }
         })
       )
-      return coins.reverse() // newest first
+      return built.filter((c): c is CoinInfo => c !== null).reverse() // newest first
     },
   })
 }
