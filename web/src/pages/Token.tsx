@@ -152,7 +152,7 @@ function NestCheck({ token }: { token: `0x${string}` }) {
       <div className="nestcheck">
         <div className="nc-head"><h3>🪺 Nest Check</h3><span className="nc-badge nc-badge-neutral">Too new to judge</span></div>
         <p className="nc-blurb">
-          Only {nc.realWallets} wallet{nc.realWallets === 1 ? '' : 's'} hold this coin so far — normal for a fresh
+          Only {nc.realWallets} wallet{nc.realWallets === 1 ? '' : 's'} hold{nc.realWallets === 1 ? 's' : ''} this coin so far — normal for a fresh
           launch, where the creator holds most of it until others buy in. Sniper screening kicks in
           once a real crowd of holders shows up.
         </p>
