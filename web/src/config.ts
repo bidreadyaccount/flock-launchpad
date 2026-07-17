@@ -4,11 +4,17 @@ import { defineChain } from 'viem'
 // EDIT THIS FILE AFTER DEPLOYING YOUR CONTRACT (see README)
 // ============================================================
 
-/** Your deployed FlockLaunchpad contract address */
-export const LAUNCHPAD_ADDRESS = '0x4fCB7e55d956ac057d394970A81D8300408296C8' as `0x${string}`
+/**
+ * FlockLaunchpad contract address.
+ * Fifth-pass audited contract, deployed to Robinhood Chain mainnet 2026-07-17.
+ * Constructor: router 0x89e5…9eba, treasury 0xdd38…f940a, 1e18 / 1.073e27 curve,
+ * 1% fee, 0 graduation fee, 20% buyback-burn. Deploy tx
+ * 0xc916a567732162f3aceebd16a3a6f750d69bfa726c902400264b47ceae4a08c3.
+ */
+export const LAUNCHPAD_ADDRESS = '0xf3B1E542aF2E4aCBFA301FD3E8946A199706b89D' as `0x${string}`
 
 /** The block number your contract was deployed at (speeds up event scanning) */
-export const DEPLOY_BLOCK = 10932779n
+export const DEPLOY_BLOCK = 11857862n
 
 /**
  * RPC endpoint. The public one works, but for a production site create a
