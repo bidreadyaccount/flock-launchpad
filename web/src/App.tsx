@@ -42,9 +42,15 @@ function ConnectButton() {
       className="btn btn-primary"
       disabled={isPending}
       onClick={() => {
-        const c = connectors[0]
+        // Desktop / in-app wallet browser: use the injected wallet. Everywhere
+        // else (a normal mobile browser has no extension): open WalletConnect,
+        // which deep-links into Uniswap Wallet / MetaMask / Rainbow / etc.
+        const hasInjected = typeof window !== 'undefined' && !!(window as any).ethereum
+        const injectedC = connectors.find((c) => c.type === 'injected')
+        const wcC = connectors.find((c) => c.type === 'walletConnect')
+        const c = hasInjected && injectedC ? injectedC : (wcC ?? connectors[0])
         if (c) connect({ connector: c })
-        else alert('No wallet found. Install MetaMask or another browser wallet.')
+        else alert('No wallet available.')
       }}
     >
       {isPending ? 'Connecting…' : 'Connect wallet'}
@@ -64,7 +70,16 @@ export default function App() {
     <div className="shell">
       <header className="header">
         <a href="#/" className="wordmark">
-          <svg className="wordmark-egg" style={{ height: '1.05em', width: 'auto', verticalAlign: '-0.16em' }} viewBox="0 0 64 80" role="img" aria-label="egg"><path d="M32 5C19 5 9 26 9 47c0 17 10 28 23 28s23-11 23-28C55 26 45 5 32 5Z" fill="#F3C877" stroke="#E3A64B" strokeWidth="2.5" /><ellipse cx="24" cy="30" rx="5.5" ry="9" fill="#FFFFFF" opacity="0.5" /></svg> FLOCK
+          <svg className="wordmark-egg" style={{ height: '1.05em', width: 'auto', verticalAlign: '-0.16em' }} viewBox="0 0 64 80" role="img" aria-label="egg" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="flock-egg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#FDF3E0" />
+                <stop offset="1" stopColor="#F3C877" />
+              </linearGradient>
+            </defs>
+            <path d="M32 5C19 5 9 26 9 47c0 17 10 28 23 28s23-11 23-28C55 26 45 5 32 5Z" fill="url(#flock-egg)" stroke="#E3A64B" strokeWidth="2.5" />
+            <ellipse cx="24" cy="30" rx="5.5" ry="9" fill="#FFFFFF" opacity="0.5" />
+          </svg> FLOCK
         </a>
         <nav className="nav">
           <a href="#/trust" className="nav-link">Trust</a>
