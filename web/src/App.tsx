@@ -64,7 +64,7 @@ export default function App() {
     <div className="shell">
       <header className="header">
         <a href="#/" className="wordmark">
-          <span className="wordmark-egg">🥚</span> FLOCK
+          <svg className="wordmark-egg" style={{ height: '1.05em', width: 'auto', verticalAlign: '-0.16em' }} viewBox="0 0 64 80" role="img" aria-label="egg"><path d="M32 5C19 5 9 26 9 47c0 17 10 28 23 28s23-11 23-28C55 26 45 5 32 5Z" fill="#F3C877" stroke="#E3A64B" strokeWidth="2.5" /><ellipse cx="24" cy="30" rx="5.5" ry="9" fill="#FFFFFF" opacity="0.5" /></svg> FLOCK
         </a>
         <nav className="nav">
           <a href="#/trust" className="nav-link">Trust</a>
