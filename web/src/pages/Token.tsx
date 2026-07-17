@@ -5,6 +5,7 @@ import { useCoin, useTrades, publicClient, type TradePoint } from '../hooks'
 import { LAUNCHPAD_ADDRESS, EXPLORER, uniswapUrl } from '../config'
 import { launchpadAbi, erc20Abi, fmtEth, fmtTokens, shortAddr, marketCapEth } from '../abi'
 import { useNestCheck } from '../holders'
+import { CoinImage } from '../CoinImage'
 
 // ---------- tiny SVG price chart, no chart library needed ----------
 function Chart({ trades }: { trades: TradePoint[] }) {
@@ -145,10 +146,24 @@ function NestCheck({ token }: { token: `0x${string}` }) {
     )
   }
 
+  // Too new to judge — held mostly by its creator, like every fresh coin.
+  if (nc.verdict === 'too-early') {
+    return (
+      <div className="nestcheck">
+        <div className="nc-head"><h3>🪺 Nest Check</h3><span className="nc-badge nc-badge-neutral">Too new to judge</span></div>
+        <p className="nc-blurb">
+          Only {nc.realWallets} wallet{nc.realWallets === 1 ? '' : 's'} hold this coin so far — normal for a fresh
+          launch, where the creator holds most of it until others buy in. Sniper screening kicks in
+          once a real crowd of holders shows up.
+        </p>
+      </div>
+    )
+  }
+
   const V = {
     'healthy':   { cls: 'nc-good', label: 'Looks healthy', blurb: 'Supply is reasonably spread out among wallets with real history.' },
-    'caution':   { cls: 'nc-warn', label: 'Caution',       blurb: 'Ownership is somewhat concentrated, or several top holders are brand-new wallets.' },
-    'high-risk': { cls: 'nc-bad',  label: 'High risk',     blurb: 'A few wallets — several with no prior history — control most of the tradable supply. This is the classic sniper pattern: they can dump on you at any time.' },
+    'caution':   { cls: 'nc-warn', label: 'Caution',       blurb: 'Ownership is somewhat concentrated, or several top holders are brand-new wallets. Look at the list below before buying.' },
+    'high-risk': { cls: 'nc-bad',  label: 'High risk',     blurb: 'Several no-history wallets control most of the tradable supply together — the classic multi-wallet sniper pattern. They can dump on you at any time.' },
   }[nc.verdict!]
 
   return (
@@ -236,7 +251,7 @@ export default function Token({ token }: { token: `0x${string}` }) {
     <div className="token-page">
       <div className="token-head">
         <div className="card-img small">
-          {coin.meta.image ? <img src={coin.meta.image} alt={coin.name} /> : <span className="card-egg">🥚</span>}
+          <CoinImage src={coin.meta.image} alt={coin.name} small />
         </div>
         <div>
           <h1>{coin.name} <span className="ticker">${coin.symbol}</span></h1>

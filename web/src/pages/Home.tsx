@@ -1,6 +1,7 @@
 import { useCoins, type CoinInfo } from '../hooks'
 import { fmtEth, marketCapEth } from '../abi'
 import { LAUNCHPAD_ADDRESS, DEMO_MODE } from '../config'
+import { CoinImage } from '../CoinImage'
 
 function HatchBar({ bps, graduated }: { bps: number; graduated: boolean }) {
   if (graduated) return <div className="hatchbar fledged"><span>🐦 fledged → trading on Uniswap</span></div>
@@ -18,9 +19,7 @@ function CoinCard({ c, king }: { c: CoinInfo; king?: boolean }) {
   return (
     <a href={`#/coin/${c.token}`} className={`card ${king ? 'card-king' : ''}`}>
       <div className="card-img">
-        {c.meta.image
-          ? <img src={c.meta.image} alt={c.name} loading="lazy" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
-          : <span className="card-egg">🥚</span>}
+        <CoinImage src={c.meta.image} alt={c.name} />
       </div>
       <div className="card-body">
         {king && <div className="king-label">👑 king of the nest</div>}

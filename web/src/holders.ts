@@ -27,7 +27,8 @@ export type HolderRow = {
 
 export type NestCheck = {
   status: 'ok' | 'too-new' | 'unavailable'
-  verdict?: 'healthy' | 'caution' | 'high-risk'
+  verdict?: 'too-early' | 'healthy' | 'caution' | 'high-risk'
+  realWallets?: number // real (non-infrastructure) holder wallets seen
   holdersCount?: number
   circulating?: bigint
   top10Pct?: number // % of circulating held by top 10 wallets
@@ -107,16 +108,34 @@ async function fetchNestCheck(token: string): Promise<NestCheck> {
   const top10Pct = pct(top10Held)
   const freshPct = pct(freshHeld)
   const freshCount = freshRows.length
+  const realWallets = wallets.length
+
+  const base = {
+    status: 'ok' as const,
+    holdersCount: Number(info.holders_count ?? info.holders ?? 0),
+    circulating, top10Pct, freshCount, freshPct, realWallets, rows,
+  }
+
+  // Not enough real holders to judge yet. A brand-new coin is naturally held
+  // almost entirely by its creator — that's normal, not a sniper attack, so
+  // we don't cry wolf. Sniping is a CROWD of coordinated fresh wallets, which
+  // can't exist until there's a crowd of holders at all.
+  const MIN_HOLDERS = 8
+  if (realWallets < MIN_HOLDERS) return { ...base, verdict: 'too-early' }
 
   let verdict: NestCheck['verdict'] = 'healthy'
-  if (top10Pct > 35 || freshPct > 10 || freshCount >= 4) verdict = 'caution'
-  if (top10Pct > 60 || freshPct > 25) verdict = 'high-risk'
 
-  return {
-    status: 'ok', verdict,
-    holdersCount: Number(info.holders_count ?? info.holders ?? 0),
-    circulating, top10Pct, freshCount, freshPct, rows,
-  }
+  // Signal 1 — the sniper pattern: MULTIPLE fresh, no-history wallets holding
+  // meaningful supply together (the "$ARROW" 200-wallet pattern in miniature).
+  // A single fresh wallet is almost always just the creator, so it never flags.
+  if (freshCount >= 3) verdict = 'caution'
+  if (freshCount >= 5 && freshPct > 30) verdict = 'high-risk'
+
+  // Signal 2 — extreme whale concentration among a real holder base.
+  if (top10Pct > 60 && verdict === 'healthy') verdict = 'caution'
+  if (top10Pct > 85 && freshCount >= 3) verdict = 'high-risk'
+
+  return { ...base, verdict }
 }
 
 export function useNestCheck(token: `0x${string}` | undefined) {

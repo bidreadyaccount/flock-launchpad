@@ -190,6 +190,7 @@ input:focus, textarea:focus { outline: none; border-color: var(--egg); }
 .nc-warn .nc-badge { background: rgba(255,206,86,.15); color: #ffce56; }
 .nc-bad { border-color: rgba(244,83,110,.6); }
 .nc-bad .nc-badge { background: rgba(244,83,110,.15); color: var(--down); }
+.nc-badge-neutral { background: rgba(139,148,167,.15); color: var(--muted); }
 .nc-blurb { color: var(--muted); margin-bottom: 12px; }
 .nc-stats { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
 .nc-bar { height: 8px; border-radius: 999px; background: var(--ink); border: 1px solid var(--line); overflow: hidden; margin-bottom: 10px; }
