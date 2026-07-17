@@ -42,11 +42,33 @@ export function marketCapEth(virtualEth: bigint, virtualToken: bigint): number {
 
 export type TokenMeta = { description?: string; image?: string }
 
-export function parseMeta(uri: string): TokenMeta {
+/**
+ * Parse on-chain coin metadata DEFENSIVELY. The metadataURI is arbitrary
+ * user input, so we accept ONLY string fields (and cap their length) and
+ * ignore anything else — an attacker cannot smuggle an object/array through
+ * here and crash the renderer (M-04). Everything downstream can assume
+ * `description` and `image`, if present, are plain bounded strings.
+ */
+export function parseMeta(uri: unknown): TokenMeta {
+  if (typeof uri !== 'string') return {}
+  // M-02: reject oversized blobs BEFORE JSON.parse so a hostile coin can't burn
+  // the visitor's CPU/memory. The contract now caps metadata at 4 KiB on-chain;
+  // this guards older/other tokens and keeps parsing cheap regardless.
+  if (uri.length > 8192) return {}
   try {
     const j = JSON.parse(uri)
-    if (typeof j === 'object' && j) return j
-  } catch { /* not JSON — treat as image url */ }
-  if (uri.startsWith('http')) return { image: uri }
+    if (j && typeof j === 'object' && !Array.isArray(j)) {
+      const out: TokenMeta = {}
+      if (typeof (j as any).description === 'string') out.description = (j as any).description.slice(0, 500)
+      if (typeof (j as any).image === 'string') out.image = (j as any).image.slice(0, 2048)
+      return out
+    }
+  } catch { /* not JSON — fall through and treat a bare URL as an image */ }
+  if (uri.startsWith('http')) return { image: uri.slice(0, 2048) }
   return {}
+}
+
+/** A transaction deadline `n` seconds from now, as a uint256 for the contract. */
+export function deadline(seconds = 600): bigint {
+  return BigInt(Math.floor(Date.now() / 1000) + seconds)
 }
