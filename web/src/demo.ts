@@ -21,6 +21,7 @@ const mk = (
     name, symbol,
     meta: { description: desc, image: img },
     createdBlock: 1000n + BigInt(i),
+    pair: (`0x${(i + 1).toString().padStart(4, '0')}` + 'e'.repeat(36)) as `0x${string}`,
     virtualEth: vE,
     virtualToken: vT,
     realEth: graduated ? 0n : vE - E18,
