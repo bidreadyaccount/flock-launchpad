@@ -63,7 +63,7 @@ function TradePanel({ token, complete }: { token: `0x${string}`; complete: boole
       if (side === 'buy') {
         const hash = await writeContractAsync({
           address: LAUNCHPAD_ADDRESS, abi: launchpadAbi,
-          functionName: 'buy', args: [token, minOut], value: parsed,
+          functionName: 'buy', args: [token, minOut, BigInt(Math.floor(Date.now() / 1000) + 600)], value: parsed,
         })
         await publicClient.waitForTransactionReceipt({ hash })
       } else {
@@ -81,7 +81,7 @@ function TradePanel({ token, complete }: { token: `0x${string}`; complete: boole
         }
         const hash = await writeContractAsync({
           address: LAUNCHPAD_ADDRESS, abi: launchpadAbi,
-          functionName: 'sell', args: [token, parsed, minOut],
+          functionName: 'sell', args: [token, parsed, minOut, BigInt(Math.floor(Date.now() / 1000) + 600)],
         })
         await publicClient.waitForTransactionReceipt({ hash })
       }
