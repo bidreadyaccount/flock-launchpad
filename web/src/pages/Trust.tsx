@@ -70,6 +70,15 @@ export default function Trust() {
         coin's activity feed marked 🔥, and each one is a public transaction.
       </Claim>
 
+      <Claim title="Every coin gets a sniper check">
+        Sniper crews spread buys across dozens of fresh wallets to grab most of a coin's
+        supply in its first minutes, then dump on everyone else. Each coin page here runs a
+        Nest Check: it reads the public holder list and flags coins where a few wallets —
+        especially brand-new ones with no history — control the tradable supply. The check
+        uses only public explorer data, runs in your own browser, and can't be faked by us
+        or by coin creators.
+      </Claim>
+
       <div className="trust-claim trust-risk">
         <h3>The honest part</h3>
         <p>

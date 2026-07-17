@@ -176,6 +176,33 @@ input:focus, textarea:focus { outline: none; border-color: var(--egg); }
 .side-toggle button.on.sell { background: var(--down); color: var(--ink); border-color: var(--down); }
 .quote { color: var(--cream); margin: 4px 0 12px; }
 
+/* ---------- Nest Check ---------- */
+.nestcheck {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 16px 18px; margin-bottom: 16px; font-size: 13.5px;
+}
+.nestcheck h3 { margin: 0; font-size: 16px; }
+.nc-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.nc-badge { font-weight: 700; font-size: 12px; padding: 3px 10px; border-radius: 999px; letter-spacing: .02em; }
+.nc-good { border-color: rgba(83,211,196,.5); }
+.nc-good .nc-badge { background: rgba(83,211,196,.15); color: var(--egg); }
+.nc-warn { border-color: rgba(255,206,86,.5); }
+.nc-warn .nc-badge { background: rgba(255,206,86,.15); color: #ffce56; }
+.nc-bad { border-color: rgba(244,83,110,.6); }
+.nc-bad .nc-badge { background: rgba(244,83,110,.15); color: var(--down); }
+.nc-blurb { color: var(--muted); margin-bottom: 12px; }
+.nc-stats { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 10px; }
+.nc-bar { height: 8px; border-radius: 999px; background: var(--ink); border: 1px solid var(--line); overflow: hidden; margin-bottom: 10px; }
+.nc-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--egg), #ffce56 55%, var(--down)); }
+.nc-list { margin-top: 10px; border-top: 1px solid var(--line); }
+.nc-row {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; padding: 6px 0;
+  color: var(--cream); font-size: 12px; border-bottom: 1px solid var(--line);
+}
+.nc-row:hover { color: var(--egg); text-decoration: none; }
+.nc-row span:last-child { color: var(--muted); }
+.nc-foot { font-size: 11px; padding-top: 8px; }
+
 /* ---------- footer ---------- */
 .footer { border-top: 1px solid var(--line); padding: 22px 0 40px; margin-top: 40px; }
 .footer p { color: var(--muted); font-size: 12px; max-width: 620px; }

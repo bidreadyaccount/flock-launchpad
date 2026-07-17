@@ -4,6 +4,7 @@ import { parseEther, parseUnits } from 'viem'
 import { useCoin, useTrades, publicClient, type TradePoint } from '../hooks'
 import { LAUNCHPAD_ADDRESS, EXPLORER, uniswapUrl } from '../config'
 import { launchpadAbi, erc20Abi, fmtEth, fmtTokens, shortAddr, marketCapEth } from '../abi'
+import { useNestCheck } from '../holders'
 
 // ---------- tiny SVG price chart, no chart library needed ----------
 function Chart({ trades }: { trades: TradePoint[] }) {
@@ -128,6 +129,65 @@ function TradePanel({ token, complete }: { token: `0x${string}`; complete: boole
   )
 }
 
+// ---------- Nest Check: sniper & whale screening from public explorer data ----------
+function NestCheck({ token }: { token: `0x${string}` }) {
+  const { data: nc, isLoading } = useNestCheck(token)
+  const [open, setOpen] = useState(false)
+
+  if (isLoading) return <div className="nestcheck"><h3>🪺 Nest Check</h3><p className="opt">Screening holders…</p></div>
+  if (!nc || nc.status === 'unavailable') return null
+  if (nc.status === 'too-new') {
+    return (
+      <div className="nestcheck">
+        <h3>🪺 Nest Check</h3>
+        <p className="opt">Too new to screen — the explorer hasn't indexed holders yet. Check back in a few minutes.</p>
+      </div>
+    )
+  }
+
+  const V = {
+    'healthy':   { cls: 'nc-good', label: 'Looks healthy', blurb: 'Supply is reasonably spread out among wallets with real history.' },
+    'caution':   { cls: 'nc-warn', label: 'Caution',       blurb: 'Ownership is somewhat concentrated, or several top holders are brand-new wallets.' },
+    'high-risk': { cls: 'nc-bad',  label: 'High risk',     blurb: 'A few wallets — several with no prior history — control most of the tradable supply. This is the classic sniper pattern: they can dump on you at any time.' },
+  }[nc.verdict!]
+
+  return (
+    <div className={`nestcheck ${V.cls}`}>
+      <div className="nc-head">
+        <h3>🪺 Nest Check</h3>
+        <span className="nc-badge">{V.label}</span>
+      </div>
+      <p className="nc-blurb">{V.blurb}</p>
+      <div className="nc-stats mono">
+        <div><span className="stat-label">holders</span>{nc.holdersCount}</div>
+        <div><span className="stat-label">top 10 wallets hold</span>{nc.top10Pct!.toFixed(1)}%</div>
+        <div><span className="stat-label">fresh-wallet share</span>{nc.freshPct!.toFixed(1)}% ({nc.freshCount} wallets)</div>
+      </div>
+      <div className="nc-bar" role="img" aria-label={`top 10 wallets hold ${nc.top10Pct!.toFixed(1)} percent`}>
+        <div className="nc-bar-fill" style={{ width: `${Math.min(100, nc.top10Pct!)}%` }} />
+      </div>
+      <button className="link-btn mono" onClick={() => setOpen(!open)}>
+        {open ? 'hide' : 'show'} top 10 wallets {open ? '▴' : '▾'}
+      </button>
+      {open && (
+        <div className="nc-list mono">
+          {nc.rows!.map((r) => (
+            <a key={r.address} href={`${EXPLORER}/address/${r.address}`} target="_blank" rel="noreferrer" className="nc-row">
+              <span>{shortAddr(r.address)}</span>
+              <span>{r.pctOfCirculating.toFixed(2)}%</span>
+              <span>{r.fresh === true ? '⚠ fresh wallet' : r.fresh === false ? `${r.txCount} txs` : '—'}</span>
+            </a>
+          ))}
+          <p className="opt nc-foot">
+            % of tradable supply (excludes the launchpad curve, burned tokens and liquidity pools).
+            "Fresh" = a wallet with ≤2 prior transactions. Data: public Blockscout API — verify it yourself.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CreatorEarnings({ creator }: { creator: `0x${string}` }) {
   const { address } = useAccount()
   const { writeContractAsync } = useWriteContract()
@@ -213,7 +273,10 @@ export default function Token({ token }: { token: `0x${string}` }) {
             {(trades ?? []).length === 0 && <p className="opt">No trades yet.</p>}
           </div>
         </div>
-        <TradePanel token={token} complete={coin.complete} />
+        <div>
+          <NestCheck token={token} />
+          <TradePanel token={token} complete={coin.complete} />
+        </div>
       </div>
     </div>
   )
